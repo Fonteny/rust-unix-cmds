@@ -67,23 +67,21 @@ fn word_count(input: String) -> Option<String> {
     let command = input.next().unwrap_or_default().trim();
     let file_path = input.next().map(str::trim);
 
-    let output = match (command, file_path) {
-        ("-c", Some(file_path)) => file_byte_count(file_path),
-        ("-l", Some(file_path)) => file_line_count(file_path),
-        ("-m", Some(file_path)) => file_word_count(file_path),
-        (_, None) => {
+    let output = match command {
+        "-c" => file_path.and_then(file_byte_count),
+        "-l" => file_path.and_then(file_line_count),
+        "-w" => file_path.and_then(file_char_count),
+        "-m" => file_path.and_then(file_word_count),
+        _ => {
             let byte_count = file_byte_count(command)?;
             let line_count = file_line_count(command)?;
             let word_count = file_word_count(command)?;
             return Some(format!("{} {} {} {}", line_count, word_count, byte_count, command));
         }
-        _ => return None,
     };
 
-    if let (Some(output), Some(file_path)) = (output, file_path) {
-        return Some(format!("{output} {file_path}"));
-    }
-    None
+    output.zip(file_path)
+          .map(|(output_val, file_path_val)| format!("{} {}", output_val, file_path_val))
 }
 
 
