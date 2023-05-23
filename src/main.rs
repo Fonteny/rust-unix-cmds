@@ -1,5 +1,6 @@
 mod wc;
 mod uniq;
+mod grep;
 
 fn get_first_word(text: &str) -> Option<&str> {
     text.split_whitespace().next()
@@ -31,6 +32,16 @@ fn main() {
             let formatted_output = output.join("\n");
 
             println!("{formatted_output}");
+        }
+    }
+
+    if command == Some("grep") {
+        let message = grep::regex_search(&input);
+
+        if let Some(output) = message {
+            let formatted_output = output.join("\n");
+
+            println!("{}", formatted_output);
         }
     }
 }

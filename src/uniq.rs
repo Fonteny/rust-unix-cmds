@@ -24,9 +24,7 @@ pub fn unique(input: &String) -> Option<Vec<String>> {
         .map(str::trim)
         .or(Some(command)); //use cmd as file_path in case no option provided
 
-    let output = match command {
+    match command {
         _ => file_path.and_then(remove_adjacent_duplicates)
-    };
-
-    Some(output).flatten()
+    }
 }

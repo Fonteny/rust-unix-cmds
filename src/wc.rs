@@ -72,6 +72,7 @@ fn file_longest_line_len(path: &str) -> Option<usize> {
 
     Some(max_len)
 }
+
 pub fn word_count(input: &String) -> Option<String> {
     let mut input = input.split_whitespace()
         .skip(1); //skip wc in front of args
