@@ -2,10 +2,6 @@ mod wc;
 mod uniq;
 mod grep;
 
-fn get_first_word(text: &str) -> Option<&str> {
-    text.split_whitespace().next()
-}
-
 fn main() {
     let mut input = String::new();
 
@@ -13,35 +9,23 @@ fn main() {
         .read_line(&mut input)
         .expect("Failed to read line");
 
-    let command = get_first_word(&input);
+    let input: Vec<String> = input.split_whitespace().map(str::to_string).collect();
 
-    if command == Some("wc") {
-        let message = wc::word_count(&input);
 
-        if let Some(output) = message {
-            println!("{output}");
+    for i in 0..input.len() {
+        if input[i] == "wc" {
+            let token1 = input.get(i+1).map(|x| &**x);
+            let token2 = input.get(i+2).map(|x| &**x);
+            let output = wc::word_count(token1, token2);
+
+            if let Some(output_val) = output {
+                println!("{output_val}");
+            }
         }
-    }
 
-    if command == Some("uniq") {
-        let message = uniq::unique(&input);
-
-
-        if let Some(output) = message {
-
-            let formatted_output = output.join("\n");
-
-            println!("{formatted_output}");
-        }
-    }
-
-    if command == Some("grep") {
-        let message = grep::regex_search(&input);
-
-        if let Some(output) = message {
-            let formatted_output = output.join("\n");
-
-            println!("{}", formatted_output);
-        }
+        //if input[i] == "grep" {
+            //let output = grep::regex_search(input.get(i+1), input.get(i+2));
+            
+        //}
     }
 }

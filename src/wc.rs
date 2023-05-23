@@ -1,5 +1,6 @@
 use std::cmp::max;
 use std::fs;
+use std::fs::metadata;
 use std::io::{BufRead, BufReader, Read};
 
 fn file_byte_count(path: &str) -> Option<usize> {
@@ -73,30 +74,36 @@ fn file_longest_line_len(path: &str) -> Option<usize> {
     Some(max_len)
 }
 
-pub fn word_count(input: &String) -> Option<String> {
-    let mut input = input.split_whitespace()
-        .skip(1); //skip wc in front of args
-    let command = input.next()?
-        .trim();
-    let file_path = input.next()
-        .map(str::trim)
-        .or(Some(command)); //use cmd as file_path if arg not provided
+fn option_case(option: &str, file_path: &str) -> Option<String> {
+    match option {
+        "-c" => file_byte_count(file_path),
+        "-l" => file_line_count(file_path),
+        "-w" => file_word_count(file_path),
+        "-m" => file_char_count(file_path),
+        "-L" => file_longest_line_len(file_path),
+        _    => None
+    }
+    .zip(Some(file_path))
+    .map(|(output, file_path_val)| format!("{output} {file_path_val}"))
+}
 
-    let output = match command {
-        "-c" => file_path.and_then(file_byte_count),
-        "-l" => file_path.and_then(file_line_count),
-        "-w" => file_path.and_then(file_char_count),
-        "-m" => file_path.and_then(file_word_count),
-        "-L" => file_path.and_then(file_longest_line_len),
-        _ => {
-            let byte_count = file_path.and_then(file_byte_count)?;
-            let line_count = file_path.and_then(file_line_count)?;
-            let word_count = file_path.and_then(file_word_count)?;
-            return Some(format!("{line_count} {word_count} {byte_count} {command}"));
-        }
-    };
+fn default_case(file_path: &str) -> Option<String> {
+    let byte_count = file_byte_count(file_path)?;
+    let line_count = file_line_count(file_path)?;
+    let word_count = file_word_count(file_path)?;
+    Some(format!("{line_count} {word_count} {byte_count} {file_path}"))
+}
 
-    output
-        .zip(file_path)
-        .map(|(output_val, file_path_val)| format!("{output_val} {file_path_val}"))
+pub fn word_count(token1: Option<&str>, token2: Option<&str>) -> Option<String> {
+    let token1 = token1.map(str::trim);
+    let token2 = token2.map(str::trim);
+    if metadata(token1?).ok()?.is_file() {
+        println!("{token1:?} is a file");
+        return default_case(token1?);
+    }
+    if metadata(token2?).ok()?.is_file() {
+        println!("{token2:?} is a file");
+        return option_case(token1?, token2?);
+    }
+    None
 }
